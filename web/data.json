@@ -1,0 +1,104 @@
+{
+  "at": "1970-01-01T00:00:00.000Z",
+  "feeds": [
+    {
+      "id": "messages",
+      "name": "긴급재난문자",
+      "state": "첫 수신 대기",
+      "savedAt": null,
+      "error": null,
+      "rows": [],
+      "messages": [],
+      "complete": false,
+      "calls": 0,
+      "nextDue": 0
+    },
+    {
+      "id": "water",
+      "name": "하천수위 · 10분 자료",
+      "state": "첫 수신 대기",
+      "savedAt": null,
+      "error": null,
+      "rows": [],
+      "messages": [],
+      "complete": false,
+      "calls": 0,
+      "nextDue": 0
+    },
+    {
+      "id": "rain",
+      "name": "우량 · 시간 자료",
+      "state": "첫 수신 대기",
+      "savedAt": null,
+      "error": null,
+      "rows": [],
+      "messages": [],
+      "complete": false,
+      "calls": 0,
+      "nextDue": 0
+    },
+    {
+      "id": "fire",
+      "name": "산불 발생정보",
+      "state": "첫 수신 대기",
+      "savedAt": null,
+      "error": null,
+      "rows": [],
+      "messages": [],
+      "complete": false,
+      "calls": 0,
+      "nextDue": 0
+    },
+    {
+      "id": "landslide",
+      "name": "산사태 공식 발령",
+      "state": "첫 수신 대기",
+      "savedAt": null,
+      "error": null,
+      "rows": [],
+      "messages": [],
+      "complete": false,
+      "calls": 0,
+      "nextDue": 0
+    },
+    {
+      "id": "prediction",
+      "name": "산사태 공식 예측",
+      "state": "첫 수신 대기",
+      "savedAt": null,
+      "error": null,
+      "rows": [],
+      "messages": [],
+      "complete": false,
+      "calls": 0,
+      "nextDue": 0
+    },
+    {
+      "id": "pop",
+      "name": "강수확률 예보",
+      "state": "첫 수신 대기",
+      "savedAt": null,
+      "error": null,
+      "rows": [],
+      "messages": [],
+      "complete": false,
+      "calls": 0,
+      "nextDue": 0
+    },
+    {
+      "id": "rain6",
+      "name": "6시간 강수량 예보",
+      "state": "첫 수신 대기",
+      "savedAt": null,
+      "error": null,
+      "rows": [],
+      "messages": [],
+      "complete": false,
+      "calls": 0,
+      "nextDue": 0
+    }
+  ],
+  "warnings": null,
+  "weather": null,
+  "sharedError": "자동 수집 설정 전 · 첫 수신 대기"
+}
