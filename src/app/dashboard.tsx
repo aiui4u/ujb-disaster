@@ -3,6 +3,7 @@ import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {Activity,ArrowUpRight,ChevronRight,CloudRain,CloudSun,Flame,Fullscreen,Info,Maximize2,MessageSquare,Mountain,Radio,RefreshCw,Wind,Waves,X} from 'lucide-react';
 import {FEEDS,fresh,kstDay,type Situation,type Message} from '@/lib/model';
 import {analyse} from '@/lib/analysis';
+import {weatherCard} from '@/lib/weather-card';
 import WeatherView from './weather-view';
 import {feedHealth,feedRecords} from '@/lib/feed-health';
 import {buildHazards,type HazardId,type HazardScope} from '@/lib/hazards';
@@ -19,14 +20,14 @@ export default function Dashboard(){
  async function refresh(){if(running.current)return;running.current=true;setBusy(true);try{const r=await fetch(`${import.meta.env.BASE_URL}data.json`,{cache:'no-store',headers:etag.current?{'If-None-Match':etag.current}:{},signal:AbortSignal.timeout(55000)});if(r.status===304){setError('');return;}const j=await r.json() as Situation&{error?:string};if(!r.ok||!j.feeds)throw Error(j.error??'수신 지연 · 저장자료 유지');etag.current=r.headers.get('ETag');setData(j);setError('');}catch(e){setError(e instanceof Error?e.message:'자료 연결 지연');}finally{running.current=false;setBusy(false);}}
  useEffect(()=>{setNow(Date.now());void refresh();const tick=setInterval(()=>setNow(Date.now()),1000),poll=setInterval(()=>void refresh(),60000);return()=>{clearInterval(tick);clearInterval(poll);};},[]);
  useEffect(()=>{if(!modal||modal==='forecast')return;lastFocus.current=document.activeElement as HTMLElement;modalRef.current?.focus();const old=document.body.style.overflow;document.body.style.overflow='hidden';const key=(e:KeyboardEvent)=>{if(e.key==='Escape')setModal(null);if(e.key==='Tab'&&modalRef.current){const a=[...modalRef.current.querySelectorAll<HTMLElement>('button,a,input,select,[tabindex="0"]')];const first=a[0],last=a[a.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}};document.addEventListener('keydown',key);return()=>{document.body.style.overflow=old;document.removeEventListener('keydown',key);lastFocus.current?.focus();};},[modal]);
- const n=now??Date.now(),a=analyse(data,n),w=data?.weather,weatherFresh=fresh(w?.observedAt,120,n)&&w?.sources?.current?.ok!==false;
+ const n=now??Date.now(),a=analyse(data,n),w=data?.weather,cardWeather=weatherCard(w,n);
  const messages=data?.feeds.find(f=>f.id==='messages');
  const localHazards=buildHazards(data,'local',n),regionalHazards=buildHazards(data,'regional',n),detailHazards=hazardScope==='local'?localHazards:regionalHazards;
  const msgs=filter==='local'?a.localMessages:a.messages;
  const localWarning=a.valid?(a.local?.active.length?a.local.active.map(v=>`${v.kind} ${v.level}`).join(' · '):'발효특보 없음'):'특보 확인 중';
  const activeCities=a.region;const sourceCount=data?.feeds.filter(f=>f.savedAt&&!f.error).length??0;
  const localCards=[
-  {icon:CloudSun,title:'기상정보',value:weatherFresh?`${w!.current.T1H??'—'}°C`: '관측 수신 대기',detail:weatherFresh?`시간강수 ${w!.current.RN1??'—'}mm · 바람 ${w!.current.WSD??'—'}m/s`:'기존 DID 기상자료 연결',note:localWarning,at:w?.observedAt,click:()=>setModal('forecast')},
+  {icon:CloudSun,title:'기상정보',value:cardWeather.value,detail:cardWeather.detail,note:cardWeather.delayed?`자료 갱신 지연 · ${localWarning}`:localWarning,at:cardWeather.at,click:()=>setModal('forecast')},
   ...localHazards.map(h=>({icon:({water:Waves,fire:Flame,landslide:Mountain,typhoon:Wind})[h.id],title:h.title,value:h.value,detail:h.detail,note:h.note,at:h.at,click:()=>openHazard(h.id,'local')})),
   {icon:MessageSquare,title:'오늘 재난문자',value:messages?.savedAt?`${a.localMessages.length}건`:'첫 수신 대기',detail:'의정부시 수신 대상',note:messages?.error?'수신 지연 · 저장자료':messages?.complete?'수신자료 본문 전체':'수집 범위 확인 중',at:messages?.savedAt,click:()=>{setFilter('local');setModal('messages');}}
  ];
