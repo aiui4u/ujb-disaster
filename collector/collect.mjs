@@ -37,7 +37,16 @@ var DB = {
 		return q;
 	},
 	async batch(items) {
-		return Promise.all(items);
+		sqlite.exec("BEGIN");
+		try {
+			const results = [];
+			for (const item of items) results.push(await item.run());
+			sqlite.exec("COMMIT");
+			return results;
+		} catch (e) {
+			sqlite.exec("ROLLBACK");
+			throw e;
+		}
 	}
 };
 var env = {
