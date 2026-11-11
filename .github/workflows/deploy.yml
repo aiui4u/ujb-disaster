@@ -1,0 +1,43 @@
+name: 사이트 게시
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: 저장소 파일 가져오기
+        uses: actions/checkout@v4
+
+      - name: 게시 파일 확인
+        run: |
+          test -f web/index.html
+          test -f web/data.json
+
+      - name: Pages 설정
+        uses: actions/configure-pages@v5
+
+      - name: 화면 파일 업로드
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+
+      - name: 사이트 게시
+        id: deployment
+        uses: actions/deploy-pages@v4
