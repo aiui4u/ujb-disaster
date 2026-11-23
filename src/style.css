@@ -80,3 +80,9 @@ h1{font-size:25px;line-height:1.25}
 @media(max-width:760px){.modal-head h2{font-size:24px}.modal-bar>span{font-size:16px}.hazard-tabs .segmented{width:100%;gap:3px}.hazard-tabs .segmented button{font-size:16px;padding:8px 10px}.hazard-modal-content .hazard-section-head h4{font-size:24px}.hazard-modal-content .hazard-record b{font-size:22px}.hazard-modal-content .hazard-record p,.hazard-modal-content .hazard-empty{font-size:20px}.hazard-modal-content .hazard-record time,.hazard-modal-content .hazard-coverage{font-size:16px}.water-level-number strong{font-size:36px}.hazard-modal-content .water-level-number span{font-size:22px}}
 .analysis-text{height:120px}.analysis-text p{font-size:16px;line-height:1.8}.analysis-text.analysis-clear{display:flex;align-items:center;min-height:90px}.analysis-text.analysis-clear p{font-size:23px;font-weight:600;color:var(--blue);margin:0}.analysis-heading h3{font-size:17px}
 @media(max-width:1150px){.analysis-text{height:auto;max-height:220px}.analysis-text.analysis-clear{min-height:80px}}
+
+/* Header shortcut to the station weather page. */
+.header-tools .weather-station-link{color:var(--blue);font-size:14px;font-weight:600;text-decoration:none;white-space:nowrap;flex-shrink:0;padding:9px 12px;min-height:38px}
+.header-tools .weather-station-link:hover{color:#b9f8ff;border-color:#54ddeb;background:#0b2b4b}
+.header-tools .weather-station-link:focus-visible{outline:2px solid #6ceaf4;outline-offset:3px}
+@media(max-width:760px){.header-tools .weather-station-link{font-size:12px;padding:6px 8px;min-height:32px}}
