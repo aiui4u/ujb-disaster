@@ -19,7 +19,7 @@ export function buildHazards(data:Situation|null,scope:HazardScope,now=Date.now(
  const feed=(id:string)=>data?.feeds.find(f=>f.id===id);
  const water=feed('water'),fire=feed('fire'),landslide=feed('landslide'),prediction=feed('prediction');
  const waterRecords:HazardRecord[]=[];
- for(const station of WATER_STATIONS.filter(s=>match(s.city))){
+ for(const station of WATER_STATIONS.filter(s=>match(s.city)&&(scope==='regional'||s.code==='1018665'))){
   const rows=(water?.rows??[]).filter(r=>field(r,'WALE_OBSVTR_CD')===station.code).sort((a,b)=>String(b.YMD_HM).localeCompare(String(a.YMD_HM)));
   const row=rows[0],at=row?feedTimestamp('water',row):null;
   if(!row||!at)continue;
@@ -54,7 +54,12 @@ export function buildHazards(data:Situation|null,scope:HazardScope,now=Date.now(
  const tRecords:HazardRecord[]=[];
  if(wValid)for(const city of w!.cities.filter(c=>match(c.name)))for(const [kind,entries] of [['발효',city.active],['예비',city.preliminary]] as const)for(const entry of entries.filter(e=>e.kind==='태풍'))tRecords.push({id:`${city.name}:${kind}:${entry.level}`,city:city.name,title:city.name,text:`태풍 ${entry.level||'예비특보'} · ${entry.areas.join(', ')}${entry.timing?` · ${entry.timing}`:''}`,at:entry.timing&&Number.isFinite(Date.parse(entry.timing))?entry.timing:w!.effectiveAt||w!.collectedAt,kind});
  const tCities=new Set(tRecords.map(r=>r.city));
- const waterSummary:HazardSummary={id:'water',title:titles.water,value:wCurrent.length?(scope==='local'?`${wCurrent[0].measurement!.value}cm`:`${wCurrent.length}개 관측소`):wOld.length?'최근 관측 기록':'관측값 없음',detail:scope==='local'?(wCurrent[0]?.title.replace('의정부시 ','')??'의정부시 관측소'):`${new Set(wCurrent.map(r=>r.city)).size}개 시군 관측`,note:wCurrent.length?('관측소 기준 수위 · cm'):wOld[0]?.text??`${area} 수위 관측값 미확보`,at:wCurrent[0]?.at??wOld[0]?.at??null,records:[...wCurrent,...wOld],empty:`${area}의 확인된 수위 관측값이 없습니다.`,coverage:scope==='regional'?`경기도 31개 시군 대상 · 소재지가 확인된 관측소 ${WATER_STATIONS.length}곳 기준`:undefined};
+ const latestLocalWater=wCurrent[0]??wOld[0];
+ const waterSummary:HazardSummary=scope==='local'?{
+  id:'water',title:titles.water,value:latestLocalWater?`${latestLocalWater.measurement!.value}cm`:'관측값 없음',
+  detail:'신곡교 관측소',note:latestLocalWater?.historical?'최신 관측 지연 · 마지막 수위':latestLocalWater?'관측소 기준 수위 · cm':'수위 관측값 미확보',
+  at:latestLocalWater?.at??null,records:[...wCurrent,...wOld],empty:'신곡교의 확인된 수위 관측값이 없습니다.'
+ }:{id:'water',title:titles.water,value:wCurrent.length?`${wCurrent.length}개 관측소`:wOld.length?'최근 관측 기록':'관측값 없음',detail:`${new Set(wCurrent.map(r=>r.city)).size}개 시군 관측`,note:wCurrent.length?('관측소 기준 수위 · cm'):wOld[0]?.text??`${area} 수위 관측값 미확보`,at:wCurrent[0]?.at??wOld[0]?.at??null,records:[...wCurrent,...wOld],empty:`${area}의 확인된 수위 관측값이 없습니다.`,coverage:`경기도 31개 시군 대상 · 소재지가 확인된 관측소 ${WATER_STATIONS.length}곳 기준`};
  return [waterSummary,{id:'fire',title:titles.fire,value:fComplete||fRecords.length?`오늘 ${fRecords.length}건`:'오늘 기록 없음',detail:`${area} 발생정보`,note:fRecords[0]?.title??(fComplete?'오늘 조회된 발생정보 0건':'오늘 발생정보 집계 미확정'),at:fire?.savedAt??null,records:fRecords,empty:fComplete?`오늘 조회된 ${area} 산불 발생정보는 0건입니다.`:`오늘 ${area} 산불 발생정보 집계가 확정되지 않았습니다.`},
  {id:'landslide',title:titles.landslide,value:lCurrent.length?`${new Set(lCurrent.map(r=>r.city)).size}개 지역 기록`:'오늘 기준 기록 없음',detail:`${area} 발령·공식 예측`,note:lCurrent[0]?.text??'오늘 공식 발령·예측 기록 없음',at:lCurrent[0]?.at??[prediction?.savedAt,landslide?.savedAt].filter((v):v is string=>!!v).sort().at(-1)??null,records:lRecords,empty:`오늘 조회된 ${area} 산사태 발령·예측 기록이 없습니다.`},
  {id:'typhoon',title:titles.typhoon,value:wValid?(tRecords.length?scope==='local'?tRecords.map(r=>r.kind==='예비'?'예비특보':r.text.split(' · ')[0].replace('태풍 ','')).join(' · '):`${tCities.size}개 시군`:'특보 없음'):'특보 미확인',detail:`${area} 태풍특보`,note:tRecords.length?tRecords.map(r=>r.city).filter((v,i,a)=>a.indexOf(v)===i).join(' · '):wValid?'발효·예비 태풍특보 없음':'최근 공식 특보 기준시각 미확정',at:w?.collectedAt??null,records:tRecords,empty:wValid?`${area}에 발효·예비 태풍특보가 없습니다.`:`${area} 태풍특보 현황이 확정되지 않았습니다.`}];
